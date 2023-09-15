@@ -18,9 +18,20 @@ initializeApp();
 
 const firestore = new Firestore();
 
-const storage = Storage();
+const storage = new Storage();
 
 const rawVideoBucketName = "justbuster-yt-raw-videos";
+
+const videoCollectionId = "videos";
+
+export interface Video {
+  id?: string,
+  uid?: string,
+  filename?: string,
+  status?: "processing" | "processed",
+  title?: string,
+  description?: string
+}
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -61,5 +72,13 @@ export const generateUploadURL = onCall({maxInstances: 1}, async (request) => {
         action: "write",
         expires: Date.now() + 15 * 60 * 1000, // 15 minutes
       });
+
+      return {url, fileName};
     
 });
+
+export const getVideos = onCall({maxInstances: 1}, async () => {
+    const querySnapshot = 
+        await firestore.collection(videoCollectionId).limit(10).get();
+    return querySnapshot.docs.map((doc) => doc.data());
+})

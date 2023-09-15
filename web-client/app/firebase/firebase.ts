@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from '@firebase/app';
+import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 
 // Your web app's Firebase configuration
@@ -35,4 +35,30 @@ export function signOut() {
  */
 export function onAuthStateChangedHelper(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
+}
+
+// The code below is from functions.ts
+
+import { getFunctions, httpsCallable } from "firebase/functions";
+
+const functions = getFunctions();
+
+const generateUploadURLFunction = httpsCallable(functions, 'generateUploadURL');
+
+export async function uploadVideo(file: File) {
+
+    const response: any = await generateUploadURLFunction({
+        fileExtension: file.name.split(".").pop
+    })
+
+    // Upload the file via the signed URL
+    const uploadResult = await fetch(response?.data?.url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+            'Content-Type': file.type
+        },
+    });
+
+    return uploadResult;
 }
